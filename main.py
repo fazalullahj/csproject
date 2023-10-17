@@ -73,9 +73,15 @@ def viewproduct():
 
 
 def addproduct():
-        pass
+    cursor.execute('select pID from product order by pID desc limit 1;')
+    pID  = int(cursor.fetchall()[0][0])+1
+    pname = input('Enter product name : ')
+    price = input('Enter prodcut price : ')
+    stock = input('Enter Total In Stock : ') # remember to substract 1 from stock when a sale is made.
 
-        
+    cursor.execute(f'insert into product values("{pID}","{pname}","{price}","{stock}"); ')
+    con.commit()
+    print(f'Successfully Added {pname}')
 cursor = con.cursor()
 cursor.execute("CREATE DATABASE IF NOT EXISTS my_database;")
 cursor.execute('USE my_database;')
