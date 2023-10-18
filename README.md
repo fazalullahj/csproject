@@ -1,4 +1,12 @@
 # csproject
-To run the project : 
-• Click on Code on top right, then download zip.
-• Run the file, or if you want to edit. then commit it in your own branch
+Prerequisites:
+--------------
+
+-   **MySQL (latest recommended)**
+-   **Python (latest recommended)**
+
+To Run:
+-------
+
+-   **Copy code and paste to your text editor and save with .py extension**
+-   **Run the file using Python.**

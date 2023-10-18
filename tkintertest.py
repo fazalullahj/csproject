@@ -7,7 +7,7 @@ root = Tk()
 root.title("Raz's Supermarket, Dubai Br.")
 root.geometry("600x650")
 
-
+                
 def auth():
     global con,cursor
     try:
