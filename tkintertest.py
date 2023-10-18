@@ -3,11 +3,12 @@ import mysql.connector as mysql
 from tkinter import messagebox
 from tkinter import ttk
 from ttkthemes import ThemedTk
+import tkinter.font as font
 
 root = ThemedTk()
 root.title("Raz's Supermarket, Dubai Br.")
 root.geometry("300x350")
-
+Heading = font.Font(family = "Arial", size = 15 , weight = "bold")
 style = ttk.Style(root)
 style.theme_use("breeze")  # 'winnative', 'clam', 'alt', 'default' and more...
 
@@ -190,13 +191,18 @@ def add():
 currentUser = ""
 currentRole = ""
 
+s = ttk.Style()
+s.configure('my.TButton', font=('Helvetica', 15))
+
+
+
 auth_frame = ttk.Frame(root)
 auth_frame.pack()
 auth_label = ttk.Label(auth_frame, text="Enter MySQL Password: ")
 auth_label.pack()
 auth_entry = ttk.Entry(auth_frame, show="*")
 auth_entry.pack()
-auth_button = ttk.Button(auth_frame, text="Authenticate", command=auth)
+auth_button = ttk.Button(auth_frame, text="Authenticate", style = "my.TButton",command=auth  )
 auth_button.pack()
 
 sign_frame = ttk.Frame(root)
@@ -207,12 +213,12 @@ sign_up_btn.pack()
 
 # sign IN
 sign_in_frame = ttk.Frame(root)
-sign_in_h1 = ttk.Label(sign_in_frame, text="Sign in")
+sign_in_h1 = ttk.Label(sign_in_frame, text="Sign in", font=Heading ,padding = 10)
 sign_in_h1.pack()
 
 # sign UP
 sign_up_frame = ttk.Frame(root)
-sign_up_h1 = ttk.Label(sign_up_frame, text="Sign up")
+sign_up_h1 = ttk.Label(sign_up_frame, text="Sign up",font=Heading, padding=10)
 sign_up_h1.pack()
 
 menu_frame = ttk.Frame(root)
