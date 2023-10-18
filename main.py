@@ -3,7 +3,7 @@ print("\t\t ABC Supermarket, Dubai branch\t\t")
 #signin and sign up function -->
 def authentication():
     choice = int(input('Sign In : 1\nSign Up : 2\nEnter your choice number: '))
-#sign in
+    #sign in
     if choice == 1:
         print('Welcome Back!')
         while True:
@@ -20,31 +20,26 @@ def authentication():
             except Exception as e:
                 print(e)
                 print('Error!')
-#sign up
+    #sign up
     elif choice == 2:
         print('New User Sign up!')
         while True:
             uname = input('Enter Username: ')
             passwd = input('Enter password: ')
-            urole = input('Enter user role: ')
-            try:
-                cursor.execute(f"INSERT INTO user_details (uname,password,urole) VALUES ('{uname}','{passwd}','{urole}');")
-                print('Account created successfully!')
-                con.commit()
-                currentUser,currentRole = uname,urole
-                print(f'Signed In as {currentUser} - {currentRole} ')
-                break
-            except Exception as e:
-                print('Username not available')
-while True:
-    try:
-        password = input('Enter password: ')
-        con = mysql.connect(host = 'localhost', user = 'root', password = password)
-        if con.is_connected():
-            print("Connected to MySQL database Successfully.")
-            break
-    except:
-        print("Failed to connect to MySQL ")
+            urole = input('Enter Role as  "cashier" or  "sales manager" : ')
+            if urole == "cashier" or urole ==  "sales manager":
+                try:
+                    cursor.execute(f"INSERT INTO user_details (uname,password,urole) VALUES ('{uname}','{passwd}','{urole}');")
+                    print('Account created successfully!')
+                    con.commit()
+                    currentUser,currentRole = uname,urole
+                    print(f'Signed In as {currentUser} - {currentRole} ')
+                    break
+                except Exception as e:
+                    print('Username not available')
+            else:
+                print('Enter Valid Role!')
+
 #main menu
 def menu():
     while True:
@@ -57,6 +52,7 @@ def menu():
             sale()
         elif choice == 4:
             break
+
 
 def viewproduct():
     cursor.execute("Select * from product;")
@@ -82,6 +78,20 @@ def addproduct():
     cursor.execute(f'insert into product values("{pID}","{pname}","{price}","{stock}"); ')
     con.commit()
     print(f'Successfully Added {pname}')
+
+
+
+while True:
+    try:
+        password = input('Enter password: ')
+        con = mysql.connect(host = 'localhost', user = 'root', password = password)
+        if con.is_connected():
+            print("Connected to MySQL database Successfully.")
+            break
+    except:
+        print("Failed to connect to MySQL ")
+
+
 cursor = con.cursor()
 cursor.execute("CREATE DATABASE IF NOT EXISTS my_database;")
 cursor.execute('USE my_database;')
