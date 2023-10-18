@@ -1,5 +1,7 @@
 from tkinter import *
 import mysql.connector as mysql
+from tkinter import messagebox
+
 
 root = Tk()
 root.title("Raz's Supermarket, Dubai Br.")
@@ -36,24 +38,63 @@ def auth():
 def sign_in():
     sign_frame.destroy()
     sign_in_frame.pack()
-    uname  = uname_entry.get()
-    password = password_entry.get()
+    uname_entry = Entry(sign_in_frame, text="Username")
+    uname_entry.pack()
+    password_entry = Entry(sign_in_frame, text="Password", show="*")
+    password_entry.pack()
+
     def submit():
+        uname = uname_entry.get()
+        password = password_entry.get()
         try:
             cursor.execute(f"select * from user_details where uname='{uname}'")
             row = cursor.fetchone()
             if row is not None and password == row[1]:
-                currentUser,currentRole = uname,row[2]
+                global currentUser, currentRole
+                currentUser, currentRole = uname, row[2]
+                sign_in_label = Label(menu_frame, text=f"Signed in as {currentUser} - {currentRole}")
+                sign_in_label.pack()
+                menu_frame.pack()
+                sign_in_frame.destroy()
         except Exception as e:
-                    print(e)
-                    print('Error!')
-                    quit()
+            print(e)
+            print('Error!')
+            quit()
+
     sign_in_submit = Button(sign_in_frame, text="Submit", command=submit)
     sign_in_submit.pack()
+
 def sign_up():
-    pass
-
-
+    sign_frame.destroy()
+    sign_up_frame.pack()
+    uname_entry = Entry(sign_up_frame, text="Username")
+    uname_entry.pack()
+    password_entry = Entry(sign_up_frame, text="Password", show="*")
+    password_entry.pack()
+    #roles menu
+    roles_list = ['Sales Manager', 'Cashier']
+    role_inside = StringVar(sign_up_frame)
+    role_inside.set("Select Role")
+    role_menu =  OptionMenu(sign_up_frame,role_inside,*roles_list)
+    role_menu.pack()
+    
+    def submit():
+        global currentRole, currentUser
+        uname = uname_entry.get()
+        password = password_entry.get()
+        urole = role_inside.get()
+        try:
+            cursor.execute(f"INSERT INTO user_details (uname,password,urole) VALUES ('{uname}','{password}','{urole}');")
+            con.commit()
+            currentUser,currentRole = uname,urole
+            sign_up_label = Label(menu_frame, text=f"Signed in as {currentUser} - {currentRole}")
+            sign_up_label.pack()
+            menu_frame.pack()
+            sign_up_frame.destroy()
+        except Exception as e:
+            messagebox.showerror("Error", f"Username not available \n {e}")
+    sign_up_submit = Button(sign_up_frame, text="Submit", command=submit)
+    sign_up_submit.pack()
 currentUser = ''
 currentRole = ''
 
@@ -80,11 +121,15 @@ sign_up_btn.pack()
 sign_in_frame = Frame(root)
 sign_in_h1 = Label(sign_in_frame, text="Sign in")
 sign_in_h1.pack()
-sign_in_label = Label(sign_in_frame, text = f"Signed in as {currentUser} - {currentRole}")
-sign_in_label.pack()
-uname_entry = Entry(sign_in_frame,text = "Username")
-uname_entry.pack()
-password_entry = Entry(sign_in_frame,text = "Password")
-password_entry.pack()
+
+
+#sign UP
+sign_up_frame = Frame(root)
+sign_up_h1 = Label(sign_up_frame,text = "Sign up")
+sign_up_h1.pack()
+
+
+menu_frame =Frame(root)
+
 
 root.mainloop()
