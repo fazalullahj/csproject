@@ -1,13 +1,11 @@
 from tkinter import *
 import mysql.connector as mysql
 from tkinter import messagebox
-
+from tkinter import ttk
 
 root = Tk()
 root.title("Raz's Supermarket, Dubai Br.")
 root.geometry("600x650")
-
-                
 def auth():
     global con,cursor
     try:
@@ -25,21 +23,22 @@ def auth():
         # sales
         cursor.execute('create table if not exists sales(sID int(20) primary key, pID int, quantity_sold int(25) , total_price float(10,2), sale_date date, cashier varchar(25), foreign key (pID) references product(pID), foreign key (cashier) references user_details(uname));')        
         if con.is_connected():
-            # After successful authentication, update the label text
-            authentication_label.config(text="Authentication Status: Authenticated")
             auth_frame.destroy()
             sign_frame.pack()
             return con,cursor
     except Exception as e:
-        print(e)
-        quit()
+        messagebox.showerror("Error","Wrong Password for MySQL.")
 
 
 def sign_in():
     sign_frame.destroy()
     sign_in_frame.pack()
+    uname_label = Label(sign_in_frame,text = "Username")
+    password_label = Label(sign_in_frame,text = "Password")
+    uname_label.pack()
     uname_entry = Entry(sign_in_frame, text="Username")
     uname_entry.pack()
+    password_label.pack()
     password_entry = Entry(sign_in_frame, text="Password", show="*")
     password_entry.pack()
 
@@ -67,9 +66,13 @@ def sign_in():
 def sign_up():
     sign_frame.destroy()
     sign_up_frame.pack()
-    uname_entry = Entry(sign_up_frame, text="Username")
+    uname_label = Label(sign_up_frame,text = "New Username")
+    password_label = Label(sign_up_frame,text = "Password")
+    uname_label.pack()
+    uname_entry = Entry(sign_up_frame)
     uname_entry.pack()
-    password_entry = Entry(sign_up_frame, text="Password", show="*")
+    password_label.pack()
+    password_entry = Entry(sign_up_frame, show="*")
     password_entry.pack()
     #roles menu
     roles_list = ['Sales Manager', 'Cashier']
@@ -84,17 +87,89 @@ def sign_up():
         password = password_entry.get()
         urole = role_inside.get()
         try:
-            cursor.execute(f"INSERT INTO user_details (uname,password,urole) VALUES ('{uname}','{password}','{urole}');")
-            con.commit()
-            currentUser,currentRole = uname,urole
-            sign_up_label = Label(menu_frame, text=f"Signed in as {currentUser} - {currentRole}")
-            sign_up_label.pack()
-            menu_frame.pack()
-            sign_up_frame.destroy()
+            if uname != '' and password != '' and urole != 'Select Role':
+                cursor.execute(f"INSERT INTO user_details (uname,password,urole) VALUES ('{uname}','{password}','{urole}');")
+                con.commit()
+                currentUser,currentRole = uname,urole
+                sign_up_label = Label(menu_frame, text=f"Signed in as {currentUser} - {currentRole}")
+                sign_up_label.pack()
+                menu_frame.pack()
+                sign_up_frame.destroy()
         except Exception as e:
             messagebox.showerror("Error", f"Username not available \n {e}")
     sign_up_submit = Button(sign_up_frame, text="Submit", command=submit)
     sign_up_submit.pack()
+
+
+
+def view():
+    cursor.execute("SELECT * FROM product;")
+    allproducts = cursor.fetchall()
+    column_names = [desc[0] for desc in cursor.description]
+
+    if len(allproducts) == 0:
+        messagebox.showerror("Error", "No products available")
+    else:
+        data_view = Tk()
+        data_view.title("View Products")
+
+        tree = ttk.Treeview(data_view, columns=column_names, show="headings")
+
+        for col in column_names:
+            tree.heading(col, text=col)
+            tree.column(col, width=100)
+
+        for product in allproducts:
+            tree.insert('', 'end', values=product)
+
+        scrollbar = ttk.Scrollbar(data_view, orient="vertical", command=tree.yview)
+        tree.configure(yscrollcommand=scrollbar.set)
+
+        tree.pack(fill="both", expand=True)
+        if len(allproducts) > 20:
+            scrollbar.pack(side="right", fill="y")
+
+        data_view.mainloop()
+
+
+
+def add():
+    
+    add_win = Tk()
+    add_win.title("Add New Product")
+    pname_label = Label(add_win, text= "Product Name: ")
+    price_label = Label(add_win,text = "Price: ")
+    stock_label = Label(add_win,text = "Stock:")
+    pname_label.pack()
+    pname_entry = Entry(add_win)
+    pname_entry.pack()
+    price_label.pack()
+    price_entry = Entry(add_win)
+    price_entry.pack()
+    stock_label.pack()
+    stock_entry = Entry(add_win)
+    stock_entry.pack()
+    
+    def submit():
+        cursor.execute('select pID from product order by pID desc limit 1;')
+        pID  = int(cursor.fetchall()[0][0])+1
+        pname = pname_entry.get()
+        price = price_entry.get()
+        stock = stock_entry.get()
+        if pname!= ''and price != ''and stock != '':
+            cursor.execute(f'insert into product values("{pID}","{pname}","{price}","{stock}"); ')
+            con.commit()
+            messagebox.showinfo("Successful", f"Product {pname} added successfully!")
+            add_win.destroy()
+        else:
+            messagebox.showerror("Failed to Add", "Please enter valid details.")
+
+    add_product_btn = Button(add_win,text= "Add Product",command = submit)
+    add_product_btn.pack()
+
+
+
+
 currentUser = ''
 currentRole = ''
 
@@ -102,11 +177,9 @@ currentRole = ''
 
 auth_frame = Frame(root)
 auth_frame.pack()
-authentication_label = Label(auth_frame, text="")
-authentication_label.pack()
 auth_label = Label(auth_frame, text="Enter MySQL Password: ")
 auth_label.pack()
-auth_entry = Entry(auth_frame, fg="red")
+auth_entry = Entry(auth_frame,show = "*")
 auth_entry.pack()
 auth_button = Button(auth_frame, text="Authenticate", command=auth)
 auth_button.pack()
@@ -130,6 +203,10 @@ sign_up_h1.pack()
 
 
 menu_frame =Frame(root)
+view_btn = Button(menu_frame, text = "View Available Products", command = view)
+view_btn.pack()
+add_btn = Button(menu_frame, text = "Add Product", command = add)
+add_btn.pack()
 
 
 root.mainloop()

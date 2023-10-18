@@ -61,8 +61,8 @@ def viewproduct():
     #if no products
     if len(allproducts) == 0:
         print('No products')
-    else:#displaying the table of data in a nice format
-        print("\t".join(column_names))  # Print columnnames
+    else:
+        print("\t".join(column_names))
         for row in allproducts:
             formatted_row = "\t".join(map(str, row))
             print(formatted_row)
