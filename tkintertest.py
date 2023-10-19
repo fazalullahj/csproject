@@ -8,9 +8,14 @@ import tkinter.font as font
 root = ThemedTk()
 root.title("Raz's Supermarket, Dubai Br.")
 root.geometry("300x350")
-Heading = font.Font(family = "Arial", size = 15 , weight = "bold")
+
+Heading = font.Font(family="Arial Black", size=15, weight="bold")
+Standard = font.Font(family="Arial", size=11)
+hidden_Entry_font = font.Font(size = 16)
 style = ttk.Style(root)
-style.theme_use("breeze")  # 'winnative', 'clam', 'alt', 'default' and more...
+style.theme_use("yaru")  # 'winnative', 'clam', 'alt', 'default' and more...
+s = ttk.Style()
+s.configure("my.TButton", takefocus=False , font=("Arial", 13, "bold"),padding = (5,2))
 
 
 def auth():
@@ -37,7 +42,8 @@ def auth():
         )
         if con.is_connected():
             auth_frame.destroy()
-            sign_frame.pack()
+            sign_frame.pack(expand=True, fill='both')
+            sign_frame.place(in_=root, anchor="c", relx=0.5, rely=0.5)
             return con, cursor
     except Exception as e:
         messagebox.showerror("Error", "Wrong Password for MySQL.")
@@ -45,14 +51,15 @@ def auth():
 
 def sign_in():
     sign_frame.destroy()
-    sign_in_frame.pack()
-    uname_label = ttk.Label(sign_in_frame, text="Username")
-    password_label = ttk.Label(sign_in_frame, text="Password")
+    sign_in_frame.pack(expand=True, fill='both')
+    sign_in_frame.place(in_=root, anchor="c", relx=0.5, rely=0.5)
+    uname_label = ttk.Label(sign_in_frame, text="Username", font=Standard)
+    password_label = ttk.Label(sign_in_frame, text="Password", font=Standard)
     uname_label.pack()
-    uname_entry = ttk.Entry(sign_in_frame, text="Username")
+    uname_entry = ttk.Entry(sign_in_frame)
     uname_entry.pack()
     password_label.pack()
-    password_entry = ttk.Entry(sign_in_frame, text="Password", show="*")
+    password_entry = ttk.Entry(sign_in_frame, show="•",font = ("Arial",11))
     password_entry.pack()
 
     def submit():
@@ -65,33 +72,39 @@ def sign_in():
                 global currentUser, currentRole
                 currentUser, currentRole = uname, row[2]
                 sign_in_label = ttk.Label(
-                    menu_frame, text=f"Signed in as {currentUser} - {currentRole}"
+                    menu_frame,
+                    text=f"Signed in as {currentUser} - {currentRole}",
+                    font=Standard,
                 )
                 sign_in_label.pack()
-                menu_frame.pack()
+                menu_frame.pack(expand=True, fill='both')
+                menu_frame.place(in_=root, anchor="c", relx=0.5, rely=0.5)
                 sign_in_frame.destroy()
         except Exception as e:
             print(e)
             print("Error!")
             quit()
 
-    sign_in_submit = ttk.Button(sign_in_frame, text="Submit", command=submit)
+    sign_in_submit = ttk.Button(
+        sign_in_frame, text="Submit", command=submit, style="my.TButton"
+    )
     sign_in_submit.pack()
 
 
 def sign_up():
     sign_frame.destroy()
-    sign_up_frame.pack()
-    uname_label = ttk.Label(sign_up_frame, text="New Username")
-    password_label = ttk.Label(sign_up_frame, text="Password")
+    sign_up_frame.pack(expand=True, fill='both')
+    sign_up_frame.place(in_=root, anchor="c", relx=0.5, rely=0.5)
+    uname_label = ttk.Label(sign_up_frame, text="New Username", font=Standard)
+    password_label = ttk.Label(sign_up_frame, text="Password", font=Standard)
     uname_label.pack()
     uname_entry = ttk.Entry(sign_up_frame)
     uname_entry.pack()
     password_label.pack()
-    password_entry = ttk.Entry(sign_up_frame, show="*")
+    password_entry = ttk.Entry(sign_up_frame, show="•", font = hidden_Entry_font)
     password_entry.pack()
     # roles menu
-    roles_list = ["","Sales Manager", "Cashier"]
+    roles_list = ["", "Sales Manager", "Cashier"]
     role_inside = StringVar(sign_up_frame)
     role_inside.set("Select Role")
     role_menu = ttk.OptionMenu(sign_up_frame, role_inside, *roles_list)
@@ -103,22 +116,33 @@ def sign_up():
         password = password_entry.get()
         urole = role_inside.get()
         try:
-            if uname != "" and password != "" and urole != "Select Role" and urole != "":
+            if (
+                uname != ""
+                and password != ""
+                and urole != "Select Role"
+                and urole != ""
+            ):
                 cursor.execute(
                     f"INSERT INTO user_details (uname,password,urole) VALUES ('{uname}','{password}','{urole}');"
                 )
                 con.commit()
                 currentUser, currentRole = uname, urole
-                sign_up_label = ttk.Label(
-                    menu_frame, text=f"Signed in as {currentUser} - {currentRole}"
+                sign_in_label = ttk.Label(
+                    menu_frame,
+                    text=f"Signed in as {currentUser} - {currentRole}",
+                    font=Standard,
                 )
-                sign_up_label.pack()
-                menu_frame.pack()
+                sign_in_label.pack()
+                
                 sign_up_frame.destroy()
+                menu_frame.pack(expand=True, fill='both')
+                menu_frame.place(in_=root, anchor="c", relx=0.5, rely=0.5)
         except Exception as e:
             messagebox.showerror("Error", f"Username not available \n {e}")
 
-    sign_up_submit = ttk.Button(sign_up_frame, text="Submit", command=submit)
+    sign_up_submit = ttk.Button(
+        sign_up_frame, text="Submit", command=submit, style="my.TButton"
+    )
     sign_up_submit.pack()
 
 
@@ -153,19 +177,24 @@ def view():
 
 
 def add():
-    add_win = Tk()
+    add_win = ThemedTk()
+    style = ttk.Style(add_win)
+    style.theme_use("breeze")
+    add_frame = ttk.Frame(add_win)
+    add_frame.pack(expand=True, fill='both')
+    add_frame.place(in_=add_win, anchor="c", relx=0.5, rely=0.5)
     add_win.title("Add New Product")
-    pname_label = ttk.Label(add_win, text="Product Name: ")
-    price_label = ttk.Label(add_win, text="Price: ")
-    stock_label = ttk.Label(add_win, text="Stock:")
+    pname_label = ttk.Label(add_frame, text="Product Name: ", font=Standard)
+    price_label = ttk.Label(add_frame, text="Price: ", font=Standard)
+    stock_label = ttk.Label(add_frame, text="Stock:", font=Standard)
     pname_label.pack()
-    pname_entry = ttk.Entry(add_win)
+    pname_entry = ttk.Entry(add_frame)
     pname_entry.pack()
     price_label.pack()
-    price_entry = ttk.Entry(add_win)
+    price_entry = ttk.Entry(add_frame)
     price_entry.pack()
     stock_label.pack()
-    stock_entry = ttk.Entry(add_win)
+    stock_entry = ttk.Entry(add_frame)
     stock_entry.pack()
 
     def submit():
@@ -184,47 +213,56 @@ def add():
         else:
             messagebox.showerror("Failed to Add", "Please enter valid details.")
 
-    add_product_btn = ttk.Button(add_win, text="Add Product", command=submit)
+    bstyle = ttk.Style(add_win)
+    bstyle.configure(".TButton", font=("Calibri", 14, "bold"))
+    add_product_btn = ttk.Button(
+        add_frame, text="Add Product", command=submit, style=".TButton"
+    )
     add_product_btn.pack()
 
 
 currentUser = ""
 currentRole = ""
 
-s = ttk.Style()
-s.configure('my.TButton', font=('Helvetica', 15))
-
-
 
 auth_frame = ttk.Frame(root)
-auth_frame.pack()
-auth_label = ttk.Label(auth_frame, text="Enter MySQL Password: ")
+auth_frame.pack(expand=True, fill='both')
+auth_frame.place(in_=root, anchor="c", relx=0.5, rely=0.5)
+auth_label = ttk.Label(auth_frame, text="MySQL Password ", font=Heading)
 auth_label.pack()
-auth_entry = ttk.Entry(auth_frame, show="*")
+auth_entry = ttk.Entry(auth_frame, show="•",font =hidden_Entry_font )
 auth_entry.pack()
-auth_button = ttk.Button(auth_frame, text="Authenticate", style = "my.TButton",command=auth  )
+auth_button = ttk.Button(
+    auth_frame, text="Authenticate", style="my.TButton", command=auth
+)
 auth_button.pack()
 
 sign_frame = ttk.Frame(root)
-sign_in_btn = ttk.Button(sign_frame, text="Sign in", command=sign_in)
+sign_in_btn = ttk.Button(
+    sign_frame, text="Sign in", command=sign_in, style="my.TButton"
+)
 sign_in_btn.pack()
-sign_up_btn = ttk.Button(sign_frame, text="Sign up", command=sign_up)
+sign_up_btn = ttk.Button(
+    sign_frame, text="Sign up", command=sign_up, style="my.TButton"
+)
 sign_up_btn.pack()
 
 # sign IN
 sign_in_frame = ttk.Frame(root)
-sign_in_h1 = ttk.Label(sign_in_frame, text="Sign in", font=Heading ,padding = 10)
+sign_in_h1 = ttk.Label(sign_in_frame, text="Sign in", font=Heading, padding=10)
 sign_in_h1.pack()
 
 # sign UP
 sign_up_frame = ttk.Frame(root)
-sign_up_h1 = ttk.Label(sign_up_frame, text="Sign up",font=Heading, padding=10)
+sign_up_h1 = ttk.Label(sign_up_frame, text="Sign up", font=Heading, padding=10)
 sign_up_h1.pack()
 
 menu_frame = ttk.Frame(root)
-view_btn = ttk.Button(menu_frame, text="View Available Products", command=view)
+view_btn = ttk.Button(
+    menu_frame, text="View Available Products", command=view, style="my.TButton"
+)
 view_btn.pack()
-add_btn = ttk.Button(menu_frame, text="Add Product", command=add)
+add_btn = ttk.Button(menu_frame, text="Add Product", command=add, style="my.TButton")
 add_btn.pack()
 
 root.mainloop()
