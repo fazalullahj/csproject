@@ -1,7 +1,6 @@
 from customtkinter import *
 import mysql.connector as mysql
 from tkinter import messagebox
-import pandas as pd
 from tkinter import ttk
 
 root = CTk()
