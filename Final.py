@@ -163,8 +163,12 @@ def add():
     stock_entry.pack()
 
     def submit():
-        cursor.execute("select pID from product order by pID desc limit 1;")
-        pID = int(cursor.fetchall()[0][0]) + 1
+        cursor.execute("select * from product")
+        if len(cursor.fetchall())==0:
+            pID = 1
+        else:
+            cursor.execute("select pID from product order by pID desc limit 1;")
+            pID = int(cursor.fetchall()[0][0]) + 1
         pname = pname_entry.get()
         price = price_entry.get()
         stock = stock_entry.get()
