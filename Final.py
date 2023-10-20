@@ -46,45 +46,49 @@ def auth():
 
 
 def sign_in():
-    sign_frame.destroy()
-    sign_in_frame.pack(expand=True, fill="both", padx=20, pady=20)
-    sign_in_frame.place(in_=root, anchor="center", relx=0.5, rely=0.5)
-    uname_label = CTkLabel(master=sign_in_frame, text="Username", font=Standard)
-    password_label = CTkLabel(master=sign_in_frame, text="Password", font=Standard)
-    uname_label.pack(pady=3)
-    uname_entry = CTkEntry(master=sign_in_frame, font=Standard)
-    uname_entry.pack()
-    password_label.pack()
-    password_entry = CTkEntry(master=sign_in_frame, show="•", font=Standard)
-    password_entry.pack()
+    if len(cursor.fetchall()) == 0:
+        messagebox.showerror("Error","No users registered. Register first!")
+    else:
+        sign_frame.destroy()
+        sign_in_frame.pack(expand=True, fill="both", padx=20, pady=20)
+        sign_in_frame.place(in_=root, anchor="center", relx=0.5, rely=0.5)
+        uname_label = CTkLabel(master=sign_in_frame, text="Username", font=Standard)
+        password_label = CTkLabel(master=sign_in_frame, text="Password", font=Standard)
+        uname_label.pack(pady=3)
+        uname_entry = CTkEntry(master=sign_in_frame, font=Standard)
+        uname_entry.pack()
+        password_label.pack()
+        password_entry = CTkEntry(master=sign_in_frame, show="•", font=Standard)
+        password_entry.pack()
+        cursor.execute("select * from user_details;")
+        
+        def submit():
+            uname = uname_entry.get()
+            password = password_entry.get()
+            try:
+                cursor.execute(f"select * from user_details where uname='{uname}'")
+                row = cursor.fetchone()
+                if row is not None and password == row[1]:
+                    global currentUser, currentRole
+                    currentUser, currentRole = uname, row[2]
+                    sign_in_label = CTkLabel(
+                        master=menu_frame,
+                        text=f"Signed in as {currentUser} - {currentRole}",
+                        font=Standard,
+                    )
+                    sign_in_label.pack()
+                    menu_frame.pack(expand=True, fill="both", padx=20, pady=20)
+                    menu_frame.place(in_=root, anchor="c", relx=0.5, rely=0.5)
+                    sign_in_frame.destroy()
+            except Exception as e:
+                print(e)
+                print("Error!")
+                quit()
 
-    def submit():
-        uname = uname_entry.get()
-        password = password_entry.get()
-        try:
-            cursor.execute(f"select * from user_details where uname='{uname}'")
-            row = cursor.fetchone()
-            if row is not None and password == row[1]:
-                global currentUser, currentRole
-                currentUser, currentRole = uname, row[2]
-                sign_in_label = CTkLabel(
-                    master=menu_frame,
-                    text=f"Signed in as {currentUser} - {currentRole}",
-                    font=Standard,
-                )
-                sign_in_label.pack()
-                menu_frame.pack(expand=True, fill="both", padx=20, pady=20)
-                menu_frame.place(in_=root, anchor="c", relx=0.5, rely=0.5)
-                sign_in_frame.destroy()
-        except Exception as e:
-            print(e)
-            print("Error!")
-            quit()
-
-    sign_in_submit = CTkButton(
-        master=sign_in_frame, text="Submit", command=submit, font=Standard
-    )
-    sign_in_submit.pack(pady=10)
+        sign_in_submit = CTkButton(
+            master=sign_in_frame, text="Submit", command=submit, font=Standard
+        )
+        sign_in_submit.pack(pady=10)
 
 
 def sign_up():
