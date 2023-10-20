@@ -45,6 +45,7 @@ def auth():
 
 
 def sign_in():
+    cursor.execute("select * from user_details;")
     if len(cursor.fetchall()) == 0:
         messagebox.showerror("Error","No users registered. Register first!")
     else:
@@ -59,7 +60,6 @@ def sign_in():
         password_label.pack()
         password_entry = CTkEntry(master=sign_in_frame, show="•", font=Standard)
         password_entry.pack()
-        cursor.execute("select * from user_details;")
         
         def submit():
             uname = uname_entry.get()
