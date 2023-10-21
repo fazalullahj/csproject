@@ -19,8 +19,8 @@ def auth():
         password = auth_entry.get()
         con = mysql.connect(host="localhost", user="root", password=password)
         cursor = con.cursor()
-        cursor.execute("CREATE DATABASE IF NOT EXISTS my_database;")
-        cursor.execute("USE my_database;")
+        cursor.execute("CREATE DATABASE IF NOT EXISTS operation_hub;")
+        cursor.execute("USE operation_hub;")
 
         # all tables creation-->
         # user details
