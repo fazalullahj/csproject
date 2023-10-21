@@ -195,6 +195,7 @@ def add():
     )
     add_product_btn.pack(pady=20)
     add_win.mainloop()
+
 t_price = 0
 
 def sale():
@@ -218,8 +219,8 @@ def sale():
         cursor.execute(f"SELECT price FROM product WHERE pname = '{selected_product}'")
         price = int(cursor.fetchone()[0])
         total_price = price * int(quantity)
-        t_price +=total_price
-        total_price_label.configure(text=f"Total Price: {t_price:.2f} AED")
+        t_price += total_price
+        total_price_label.configure(text=f"Total Price: {t_price} AED")
         cursor.execute(
             f"SELECT pID, stock FROM product WHERE pname = '{selected_product}'"
         )
