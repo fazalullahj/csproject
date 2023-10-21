@@ -6,10 +6,10 @@ from tkinter import ttk
 root = CTk()
 root.geometry("350x300")
 root.title("Graphical Retail Operation Hub")
-set_default_color_theme("blue")
-set_appearance_mode("light")
+set_default_color_theme("green")
+set_appearance_mode("dark")
 Heading = CTkFont(family="Arial Black", size=30, weight="bold")
-Bfont = CTkFont(family="Arial",size = 28,weight="bold")
+Bfont = CTkFont(family="Arial", size=28, weight="bold")
 Standard = CTkFont(family="Arial", size=15, weight="bold")
 
 
@@ -44,11 +44,16 @@ def auth():
         messagebox.showerror("Error", "Wrong Password for MySQL.")
 
 
+currentRole = ""
+currentUser = ""
+
+
 def sign_in():
     cursor.execute("select * from user_details;")
     if len(cursor.fetchall()) == 0:
-        messagebox.showerror("Error","No users registered. Register first!")
+        messagebox.showerror("Error", "No users registered. Register first!")
     else:
+        global currentRole, currentUser
         sign_frame.destroy()
         sign_in_frame.pack(expand=True, fill="both", padx=20, pady=20)
         sign_in_frame.place(in_=root, anchor="center", relx=0.5, rely=0.5)
@@ -60,7 +65,7 @@ def sign_in():
         password_label.pack()
         password_entry = CTkEntry(master=sign_in_frame, show="•", font=Standard)
         password_entry.pack()
-        
+
         def submit():
             uname = uname_entry.get()
             password = password_entry.get()
@@ -72,13 +77,20 @@ def sign_in():
                     currentUser, currentRole = uname, row[2]
                     sign_in_label = CTkLabel(
                         master=menu_frame,
-                        text=f"Signed in as {currentUser} - {currentRole}",
+                        text=f"Signed in | {currentUser.capitalize()} - {currentRole} |",
                         font=Standard,
                     )
                     sign_in_label.pack()
                     menu_frame.pack(expand=True, fill="both", padx=20, pady=20)
                     menu_frame.place(in_=root, anchor="c", relx=0.5, rely=0.5)
                     sign_in_frame.destroy()
+                    if currentRole == "Sales Manager":
+                        view_btn.pack(pady=5)
+                        add_btn.pack(pady=5)
+                        sale_btn.pack(pady=5)
+                    elif currentRole == "Cashier":
+                        view_btn.pack(pady=5)
+                        sale_btn.pack(pady=5)
             except Exception as e:
                 print(e)
                 print("Error!")
@@ -91,6 +103,7 @@ def sign_in():
 
 
 def sign_up():
+    global currentRole, currentUser
     sign_frame.destroy()
     sign_up_frame.pack(expand=True, fill="both", padx=20, pady=20)
     sign_up_frame.place(in_=root, anchor="c", relx=0.5, rely=0.5)
@@ -98,18 +111,17 @@ def sign_up():
     password_label = CTkLabel(master=sign_up_frame, text="Password", font=Standard)
     uname_label.pack()
     uname_entry = CTkEntry(master=sign_up_frame, font=Standard)
-    uname_entry.pack(pady =5)
+    uname_entry.pack(pady=5)
     password_label.pack()
     password_entry = CTkEntry(master=sign_up_frame, show="•", font=Standard)
-    password_entry.pack(pady =10)
+    password_entry.pack(pady=10)
     # roles menu
     roles_list = ["Sales Manager", "Cashier"]
     role_inside = StringVar(value="Select Role")
     role_menu = CTkOptionMenu(sign_up_frame, values=roles_list, variable=role_inside)
-    role_menu.pack(pady =10)
+    role_menu.pack(pady=10)
 
     def submit():
-        global currentRole, currentUser
         uname = uname_entry.get()
         password = password_entry.get()
         urole = role_inside.get()
@@ -127,7 +139,7 @@ def sign_up():
                 currentUser, currentRole = uname, urole
                 sign_in_label = CTkLabel(
                     master=menu_frame,
-                    text=f"Signed in as {currentUser} - {currentRole}",
+                    text=f"Signed in ⁛ {currentUser.capitalize()} - {currentRole} ⁛",
                     font=Standard,
                 )
                 sign_in_label.pack()
@@ -135,18 +147,25 @@ def sign_up():
                 sign_up_frame.destroy()
                 menu_frame.pack(expand=True, fill="both", padx=20, pady=20)
                 menu_frame.place(in_=root, anchor="c", relx=0.5, rely=0.5)
+                if currentRole == "Sales Manager":
+                    view_btn.pack(pady=5)
+                    add_btn.pack(pady=5)
+                    sale_btn.pack(pady=5)
+                elif currentRole == "Cashier":
+                    view_btn.pack(pady=10)
+                    sale_btn.pack(pady=5)
         except Exception as e:
             messagebox.showerror("Error", f"Username not available \n {e}")
 
     sign_up_submit = CTkButton(sign_up_frame, text="Submit", command=submit)
-    sign_up_submit.pack(pady = 20)
+    sign_up_submit.pack(pady=20)
 
 
 def add():
     add_win = CTk()
     add_win.title("Add New Product")
     add_win.geometry("200x300")
-    add_frame = CTkFrame(master = add_win,fg_color="transparent")
+    add_frame = CTkFrame(master=add_win, fg_color="transparent")
     add_frame.pack(expand=True, fill="both")
     add_frame.place(in_=add_win, anchor="c", relx=0.5, rely=0.5)
     pname_label = CTkLabel(master=add_frame, text="Product Name ", font=Standard)
@@ -164,7 +183,7 @@ def add():
 
     def submit():
         cursor.execute("select * from product")
-        if len(cursor.fetchall())==0:
+        if len(cursor.fetchall()) == 0:
             pID = 1
         else:
             cursor.execute("select pID from product order by pID desc limit 1;")
@@ -187,6 +206,150 @@ def add():
     )
     add_product_btn.pack(pady=20)
     add_win.mainloop()
+
+
+def sale():
+    def calculate_total():
+        selected_product = product_var.get()
+        quantity = quantity_entry.get()
+
+        if selected_product == "Select Product":
+            messagebox.showerror("Error", "Please select a product.")
+            return
+
+        if not quantity.isdigit() or int(quantity) <= 0:
+            messagebox.showerror("Error", "Please enter a valid quantity.")
+            return
+
+        cursor.execute(f"SELECT price FROM product WHERE pname = '{selected_product}'")
+        price = int(cursor.fetchone()[0])
+        total_price = price * int(quantity)
+        total_price_label.configure(text=f"Total Price: {total_price:.2f} AED")
+        cursor.execute(
+            f"SELECT pID, stock FROM product WHERE pname = '{selected_product}'"
+        )
+        product_info = cursor.fetchone()
+        current_stock = product_info[1]
+        stock_label.configure(text=f"Stock: {current_stock}")
+
+    def add_to_cart():
+        selected_product = product_var.get()
+        quantity = quantity_entry.get()
+
+        if selected_product == "Select Product":
+            messagebox.showerror("Error", "Please select a product.")
+            return
+
+        if not quantity.isdigit() or int(quantity) <= 0:
+            messagebox.showerror("Error", "Please enter a valid quantity.")
+            return
+
+        cursor.execute(f"SELECT price FROM product WHERE pname = '{selected_product}'")
+        price = cursor.fetchone()[0]
+        total_price = price * int(quantity)
+
+        cart_listbox.insert(
+            "", "end", values=(selected_product, int(quantity), price, total_price)
+        )
+
+    def process_sale():
+        cashier = currentUser
+
+        def get_next_sale_id():
+            cursor.execute("SELECT MAX(sID) FROM sales")
+            result = cursor.fetchone()[0]
+            return (result if result else 0) + 1
+
+        for item in cart_listbox.get_children():
+            values = cart_listbox.item(item)["values"]
+            selected_product = values[0]
+            quantity = values[1]
+
+            cursor.execute(
+                f"SELECT pID, stock FROM product WHERE pname = '{selected_product}'"
+            )
+            product_info = cursor.fetchone()
+            product_id = product_info[0]
+            current_stock = product_info[1]
+
+            if quantity > current_stock:
+                messagebox.showerror(
+                    "Error", f"Insufficient stock for {selected_product}."
+                )
+                return
+
+            total_price = values[3]
+            sale_id = get_next_sale_id()
+            new_stock = current_stock - quantity
+            cursor.execute(
+                f"UPDATE product SET stock = {new_stock} WHERE pID = {product_id}"
+            )
+
+            cursor.execute(
+                f"INSERT INTO sales (sID, pID, quantity_sold, total_price, sale_date, cashier) "
+                f"VALUES ({sale_id}, {product_id}, {quantity}, {total_price}, NOW(), '{cashier}')"
+            )
+
+        con.commit()
+        cart_listbox.delete(*cart_listbox.get_children())
+        messagebox.showinfo("Sale Complete", "Sale recorded successfully.")
+
+    pos_win = CTk()
+    pos_win.title("Point of Sale")
+    pos_win.geometry("400x600")
+
+    pos_frame = CTkFrame(master=pos_win, fg_color="transparent")
+    pos_frame.pack(expand=True, fill="both")
+    pos_frame.place(in_=pos_win, anchor="c", relx=0.5, rely=0.5)
+
+    product_label = CTkLabel(master=pos_frame, text="Select Product:", font=Standard)
+    product_label.pack()
+
+    cursor.execute("SELECT pname FROM product")
+    products = [row[0] for row in cursor.fetchall()]
+    product_var = StringVar(value="Select Product")
+    product_menu = CTkOptionMenu(pos_frame, values=products, variable=product_var)
+    product_menu.pack(pady=10)
+    stock_label = CTkLabel(master=pos_frame, text="Stock: ", font=Standard)
+    stock_label.pack()
+    quantity_label = CTkLabel(master=pos_frame, text="Quantity:", font=Standard)
+    quantity_label.pack()
+    quantity_entry = CTkEntry(master=pos_frame, font=Standard)
+    quantity_entry.pack()
+
+    calculate_button = CTkButton(
+        master=pos_frame, text="Calculate Total", command=calculate_total, font=Standard
+    )
+    calculate_button.pack(pady=10)
+
+    add_to_cart_button = CTkButton(
+        master=pos_frame, text="Add to Cart", command=add_to_cart, font=Standard
+    )
+    add_to_cart_button.pack(pady=10)
+
+    total_price_label = CTkLabel(
+        master=pos_frame, text="Total Price: 0.00 AED", font=Standard
+    )
+    total_price_label.pack()
+
+    cart_listbox = ttk.Treeview(
+        master=pos_frame,
+        columns=["Product", "Quantity", "Price", "Total Price"],
+        show="headings",
+    )
+
+    for col in ["Product", "Quantity", "Price", "Total Price"]:
+        cart_listbox.heading(col, text=col)
+        cart_listbox.column(col, width=100)
+
+    cart_listbox.pack(fill="both", expand=True)
+
+    process_sale_button = CTkButton(
+        master=pos_frame, text="Process Sale", command=process_sale, font=Standard
+    )
+    process_sale_button.pack(pady=20)
+
+    pos_win.mainloop()
 
 
 def view():
@@ -218,15 +381,24 @@ def view():
 
         data_view.mainloop()
 
+
 def combobox_callback(choice):
     set_appearance_mode(choice)
     theme_var.set(f"{choice.capitalize()} theme")
-theme_var = StringVar(value = "Theme")
-theme = CTkComboBox(master = root, values=["light", "dark"],command=combobox_callback, variable=theme_var,justify="center")
+
+
+theme_var = StringVar(value="Theme")
+theme = CTkComboBox(
+    master=root,
+    values=["light", "dark"],
+    command=combobox_callback,
+    variable=theme_var,
+    justify="center",
+)
 theme_var.set("Theme")
 theme.pack()
 
-auth_frame = CTkFrame(master=root, height = 300, width = 350,fg_color="transparent")
+auth_frame = CTkFrame(master=root, height=300, width=350, fg_color="transparent")
 auth_frame.pack(expand=True, fill="y", padx=20, pady=50)
 auth_frame.place(in_=root, anchor="center")
 auth_label = CTkLabel(
@@ -236,38 +408,35 @@ auth_label.pack()
 auth_entry = CTkEntry(master=auth_frame, show="• ", font=("Arial", 20))
 auth_entry.pack()
 auth_button = CTkButton(
-    master=auth_frame, text="Authenticate", command=auth, font=Standard,corner_radius=180
+    master=auth_frame,
+    text="Authenticate",
+    command=auth,
+    font=Standard,
+    corner_radius=180,
 )
-auth_button.pack(pady=20, padx = 5)
+auth_button.pack(pady=20, padx=5)
 auth_frame.pack()
 
-sign_frame = CTkFrame(master=root,width=300,height=300,fg_color="transparent")
-sign_in_btn = CTkButton(
-    master=sign_frame, text="Sign in", command=sign_in, font=Bfont
-)
-sign_in_btn.pack(pady=10,padx=30)
-sign_up_btn = CTkButton(
-    master=sign_frame, text="Sign up", command=sign_up, font=Bfont
-)
-sign_up_btn.pack(pady=10,padx=30)
+sign_frame = CTkFrame(master=root, width=300, height=300, fg_color="transparent")
+sign_in_btn = CTkButton(master=sign_frame, text="Sign in", command=sign_in, font=Bfont)
+sign_in_btn.pack(pady=10, padx=30)
+sign_up_btn = CTkButton(master=sign_frame, text="Sign up", command=sign_up, font=Bfont)
+sign_up_btn.pack(pady=10, padx=30)
 
 # sign IN
-sign_in_frame = CTkFrame(master=root,fg_color="transparent")
+sign_in_frame = CTkFrame(master=root, fg_color="transparent")
 sign_in_h1 = CTkLabel(master=sign_in_frame, text="Sign in", font=Heading)
 sign_in_h1.pack()
 
 # sign UP
-sign_up_frame = CTkFrame(master=root,fg_color="transparent")
+sign_up_frame = CTkFrame(master=root, fg_color="transparent")
 sign_up_h1 = CTkLabel(master=sign_up_frame, text="Sign up", font=Heading)
 sign_up_h1.pack()
 
-menu_frame = CTkFrame(master=root,fg_color="transparent")
-view_btn = CTkButton(
-    master=menu_frame, text="View Products", command=view, font=Bfont
-)
-view_btn.pack(pady=10)
+menu_frame = CTkFrame(master=root, fg_color="transparent")
+view_btn = CTkButton(master=menu_frame, text="View Products", command=view, font=Bfont)
 add_btn = CTkButton(master=menu_frame, text="Add Product", command=add, font=Bfont)
-add_btn.pack(pady=10)
+sale_btn = CTkButton(menu_frame, text="Make a sale", command=sale, font=Bfont)
 
 
 root.mainloop()
