@@ -6,10 +6,10 @@ from tkinter import ttk
 root = CTk()
 root.geometry("350x300")
 root.title("Graphical Retail Operation Hub")
-set_default_color_theme("green")
+set_default_color_theme("dark-blue")
 set_appearance_mode("dark")
 Heading = CTkFont(family="Arial Black", size=30, weight="bold")
-Bfont = CTkFont(family="Arial", size=28, weight="bold")
+Bfont = CTkFont(family="Arial", size=16, weight="bold")
 Standard = CTkFont(family="Arial", size=15, weight="bold")
 
 
@@ -77,7 +77,7 @@ def sign_in():
                     currentUser, currentRole = uname, row[2]
                     sign_in_label = CTkLabel(
                         master=menu_frame,
-                        text=f"Signed in | {currentUser.capitalize()} - {currentRole} |",
+                        text=f"Signed in ⁛ {currentUser.capitalize()} - {currentRole} ⁛",
                         font=Standard,
                     )
                     sign_in_label.pack()
@@ -88,6 +88,7 @@ def sign_in():
                         view_btn.pack(pady=5)
                         add_btn.pack(pady=5)
                         sale_btn.pack(pady=5)
+                        sale_history_btn.pack(pady = 5)
                     elif currentRole == "Cashier":
                         view_btn.pack(pady=5)
                         sale_btn.pack(pady=5)
@@ -151,6 +152,7 @@ def sign_up():
                     view_btn.pack(pady=5)
                     add_btn.pack(pady=5)
                     sale_btn.pack(pady=5)
+                    sale_history_btn.pack(pady = 5)
                 elif currentRole == "Cashier":
                     view_btn.pack(pady=10)
                     sale_btn.pack(pady=5)
@@ -209,6 +211,9 @@ def add():
 
 
 def sale():
+    cursor.execute("select * from product")
+    if len(cursor.fetchall()) ==0 :
+        messagebox.showerror("Error","No Products available!")
     def calculate_total():
         selected_product = product_var.get()
         quantity = quantity_entry.get()
@@ -381,6 +386,30 @@ def view():
 
         data_view.mainloop()
 
+import prettytable
+
+def sale_history():
+    cursor.execute("SELECT * FROM sales")
+    data = cursor.fetchall()
+
+    output_file_path = "sales.txt"
+    column_names = [desc[0] for desc in cursor.description]
+
+    with open(output_file_path, "w") as file:
+        x = prettytable.PrettyTable()
+        x.field_names = column_names
+
+        left_aligned_fields = ["sale_date"]
+        for field in left_aligned_fields:
+            x.align[field] = 'l'
+
+        x.padding_width = 1  
+
+        for row in data:
+            x.add_row(list(row))
+        file.write(str(x))
+        sales_label =  CTkLabel(master =menu_frame, text = 'Sales History saved to file —> "sales.txt"',font = Standard)
+        sales_label.pack(pady =5)
 
 def combobox_callback(choice):
     set_appearance_mode(choice)
@@ -436,7 +465,7 @@ sign_up_h1.pack()
 menu_frame = CTkFrame(master=root, fg_color="transparent")
 view_btn = CTkButton(master=menu_frame, text="View Products", command=view, font=Bfont)
 add_btn = CTkButton(master=menu_frame, text="Add Product", command=add, font=Bfont)
-sale_btn = CTkButton(menu_frame, text="Make a sale", command=sale, font=Bfont)
-
+sale_btn = CTkButton(master = menu_frame, text="Make a sale", command=sale, font=Bfont)
+sale_history_btn = CTkButton(master = menu_frame , text = "Sale History", command = sale_history, font = Bfont)
 
 root.mainloop()
