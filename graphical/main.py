@@ -214,6 +214,7 @@ def sale():
     cursor.execute("select * from product")
     if len(cursor.fetchall()) ==0 :
         messagebox.showerror("Error","No Products available!")
+        return
     def calculate_total():
         selected_product = product_var.get()
         quantity = quantity_entry.get()
