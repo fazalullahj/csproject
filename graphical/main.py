@@ -195,7 +195,7 @@ def add():
     )
     add_product_btn.pack(pady=20)
     add_win.mainloop()
-
+t_price = 0
 
 def sale():
     cursor.execute("select * from product")
@@ -203,6 +203,7 @@ def sale():
         messagebox.showerror("Error","No Products available!")
         return
     def calculate_total():
+        global t_price
         selected_product = product_var.get()
         quantity = quantity_entry.get()
 
@@ -217,7 +218,8 @@ def sale():
         cursor.execute(f"SELECT price FROM product WHERE pname = '{selected_product}'")
         price = int(cursor.fetchone()[0])
         total_price = price * int(quantity)
-        total_price_label.configure(text=f"Total Price: {total_price:.2f} AED")
+        t_price +=total_price
+        total_price_label.configure(text=f"Total Price: {t_price:.2f} AED")
         cursor.execute(
             f"SELECT pID, stock FROM product WHERE pname = '{selected_product}'"
         )
@@ -228,7 +230,7 @@ def sale():
     def add_to_cart():
         selected_product = product_var.get()
         quantity = quantity_entry.get()
-
+        calculate_total()
         if selected_product == "Select Product":
             messagebox.showerror("Error", "Please select a product.")
             return
@@ -324,7 +326,7 @@ def sale():
     total_price_label = CTkLabel(
         master=pos_frame, text="Total Price: 0.00 AED", font=Standard
     )
-    total_price_label.pack()
+    
 
     cart_listbox = ttk.Treeview(
         master=pos_frame,
@@ -337,7 +339,7 @@ def sale():
         cart_listbox.column(col, width=100)
 
     cart_listbox.pack(fill="both", expand=True)
-
+    total_price_label.pack()
     process_sale_button = CTkButton(
         master=pos_frame, text="Process Sale", command=process_sale, font=Standard
     )
