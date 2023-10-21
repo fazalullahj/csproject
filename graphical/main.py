@@ -13,6 +13,7 @@ Bfont = CTkFont(family="Arial", size=16, weight="bold")
 Standard = CTkFont(family="Arial", size=15, weight="bold")
 
 
+
 def auth():
     global con, cursor
     try:
@@ -396,22 +397,19 @@ def sale_history():
     output_file_path = "sales.txt"
     column_names = [desc[0] for desc in cursor.description]
 
-    with open(output_file_path, "w") as file:
-        x = prettytable.PrettyTable()
-        x.field_names = column_names
+    file = open(output_file_path, "w")
+    x = prettytable.PrettyTable()
+    x.field_names = column_names
+    x.padding_width = 1  
 
-        left_aligned_fields = ["sale_date"]
-        for field in left_aligned_fields:
-            x.align[field] = 'l'
+    x.add_rows(data)
+    print(x)
 
-        x.padding_width = 1  
-
-        for row in data:
-            x.add_row(list(row))
-        file.write(str(x))
-        sales_label =  CTkLabel(master =menu_frame, text = 'Sales History saved to file —> "sales.txt"',font = Standard)
-        sales_label.pack(pady =5)
-
+    file.write(str(x))
+    file.close()
+    sales_label =  CTkLabel(master =menu_frame,font = Standard)
+    sales_label.configure(text = 'Sales History saved to file —> "sales.txt"')
+    sales_label.pack(pady=5)
 def combobox_callback(choice):
     set_appearance_mode(choice)
     theme_var.set(f"{choice.capitalize()} theme")
@@ -426,7 +424,7 @@ theme = CTkComboBox(
     justify="center",
 )
 theme_var.set("Theme")
-theme.pack()
+theme.pack(pady=10)
 
 auth_frame = CTkFrame(master=root, height=300, width=350, fg_color="transparent")
 auth_frame.pack(expand=True, fill="y", padx=20, pady=50)
