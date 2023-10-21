@@ -138,25 +138,11 @@ def sign_up():
                     f"INSERT INTO user_details (uname,password,urole) VALUES ('{uname}','{password}','{urole}');"
                 )
                 con.commit()
+                
                 currentUser, currentRole = uname, urole
-                sign_in_label = CTkLabel(
-                    master=menu_frame,
-                    text=f"Signed in ⁛ {currentUser.capitalize()} - {currentRole} ⁛",
-                    font=Standard,
-                )
-                sign_in_label.pack()
 
                 sign_up_frame.destroy()
-                menu_frame.pack(expand=True, fill="both", padx=20, pady=20)
-                menu_frame.place(in_=root, anchor="c", relx=0.5, rely=0.5)
-                if currentRole == "Sales Manager":
-                    view_btn.pack(pady=5)
-                    add_btn.pack(pady=5)
-                    sale_btn.pack(pady=5)
-                    sale_history_btn.pack(pady = 5)
-                elif currentRole == "Cashier":
-                    view_btn.pack(pady=10)
-                    sale_btn.pack(pady=5)
+                sign_in()
         except Exception as e:
             messagebox.showerror("Error", f"Username not available \n {e}")
 
@@ -299,6 +285,7 @@ def sale():
 
         con.commit()
         cart_listbox.delete(*cart_listbox.get_children())
+        sale_history()
         messagebox.showinfo("Sale Complete", "Sale recorded successfully.")
 
     pos_win = CTk()
@@ -403,13 +390,12 @@ def sale_history():
     x.padding_width = 1  
 
     x.add_rows(data)
-    print(x)
 
     file.write(str(x))
     file.close()
-    sales_label =  CTkLabel(master =menu_frame,font = Standard)
-    sales_label.configure(text = 'Sales History saved to file —> "sales.txt"')
-    sales_label.pack(pady=5)
+    global theme_var
+    sales_label.configure(text = f'Sales History saved to file ➡ "sales.txt"',fg_color = "#e35d3b")
+    
 def combobox_callback(choice):
     set_appearance_mode(choice)
     theme_var.set(f"{choice.capitalize()} theme")
@@ -466,5 +452,6 @@ view_btn = CTkButton(master=menu_frame, text="View Products", command=view, font
 add_btn = CTkButton(master=menu_frame, text="Add Product", command=add, font=Bfont)
 sale_btn = CTkButton(master = menu_frame, text="Make a sale", command=sale, font=Bfont)
 sale_history_btn = CTkButton(master = menu_frame , text = "Sale History", command = sale_history, font = Bfont)
-
+sales_label =  CTkLabel(master =menu_frame,text = "",font = Standard)
+sales_label.pack(pady=5)
 root.mainloop()
