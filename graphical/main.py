@@ -34,7 +34,7 @@ def auth():
         )
         # sales
         cursor.execute(
-            "create table if not exists sales(sID int(20) primary key, pID int, quantity_sold int(25), total_price float(10,2), sale_date date, cashier varchar(25), foreign key (pID) references product(pID), foreign key (cashier) references user_details(uname));"
+            "create table if not exists sales(sID int(20) primary key, product varchar(20), quantity_sold int(25), total_price float(10,2), sale_date date, cashier varchar(25), foreign key (cashier) references user_details(uname));"
         )
         if con.is_connected():
             auth_frame.destroy()
@@ -259,7 +259,9 @@ def sale():
         total_price_label.configure(text=f"Total Price: {t_price} AED")
     def process_sale():
         cashier = currentUser
-
+        if len(cart_listbox.get_children()) ==0:
+            messagebox.showerror('Error','Cart is empty')
+            return
         def get_next_sale_id():
             cursor.execute("SELECT MAX(sID) FROM sales")
             result = cursor.fetchone()[0]
@@ -286,17 +288,19 @@ def sale():
             total_price = values[3]
             sale_id = get_next_sale_id()
             new_stock = current_stock - quantity
+            if new_stock == 0 :
+                cursor.execute(f"DELETE from product where pname='{selected_product}' ")
             cursor.execute(
                 f"UPDATE product SET stock = {new_stock} WHERE pID = {product_id}"
             )
-
+            
             cursor.execute(
-                f"INSERT INTO sales (sID, pID, quantity_sold, total_price, sale_date, cashier) "
-                f"VALUES ({sale_id}, {product_id}, {quantity}, {total_price}, NOW(), '{cashier}')"
+                f"INSERT INTO sales (sID, product, quantity_sold, total_price, sale_date, cashier) "
+                f"VALUES ({sale_id}, '{selected_product}', {quantity}, {total_price}, NOW(), '{cashier}')"
             )
 
         con.commit()
-        cart_listbox.delete(*cart_listbox.get_children())
+        clear_cart()
         sale_history()
         messagebox.showinfo("Sale Complete", "Sale recorded successfully.")
 
@@ -313,10 +317,20 @@ def sale():
 
     cursor.execute("SELECT pname FROM product")
     products = [row[0] for row in cursor.fetchall()]
+ 
+
+    for product in products:
+        cursor.execute(f"select stock from product where pname = '{product}'")
+        row = cursor.fetchone()
+        if row is not None and row[0] == 0:
+            products.remove(product)
+
+
+
     product_var = StringVar(value="Select Product")
     product_menu = CTkOptionMenu(pos_frame, values=products, variable=product_var)
     product_menu.pack(pady=10)
-    stock_label = CTkLabel(master=pos_frame, text="Stock: ", font=Standard)
+    stock_label = CTkLabel(master=pos_frame, text="⁛", font=Standard)
     stock_label.pack()
     quantity_label = CTkLabel(master=pos_frame, text="Quantity:", font=Standard)
     quantity_label.pack()
@@ -359,7 +373,7 @@ def view():
     query = "SELECT * FROM product;"
     cursor.execute(query)
     allproducts = cursor.fetchall()
-    column_names = [desc[0] for desc in cursor.description]
+    column_names = ["ID","Name","Price", "Stock"]
     if len(allproducts) == 0:
         messagebox.showerror("Error", "No products available")
     else:
