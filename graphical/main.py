@@ -42,7 +42,12 @@ def auth():
             sign_frame.place(in_=root, anchor="c", relx=0.5, rely=0.5)
             return con, cursor
     except Exception as e:
-        messagebox.showerror("Error", f"Try Again. \n Error:{e}")
+        if str(e) == "1045 (28000): Access denied for user 'root'@'localhost' (using password: YES)":
+            messagebox.showerror("Failed Authentication","Wrong password for Mysql! Try Again")
+        else:
+            print(e)
+            messagebox.showerror("Error", f"Try Again. \n Error:{e}")
+
 
 
 currentRole = ""
