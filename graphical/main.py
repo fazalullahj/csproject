@@ -8,7 +8,7 @@ root.geometry("350x300")
 root.title("Graphical Retail Operation Hub")
 set_default_color_theme("dark-blue")
 set_appearance_mode("dark")
-Heading = CTkFont(family="Arial Black", size=30, weight="bold")
+Heading = CTkFont(family="Arial Black", size=28, weight="bold")
 Bfont = CTkFont(family="Arial", size=16, weight="bold")
 Standard = CTkFont(family="Arial", size=15, weight="bold")
 
@@ -222,7 +222,7 @@ def sale():
             return
 
         cursor.execute(f"SELECT price FROM product WHERE pname = '{selected_product}'")
-        price = int(cursor.fetchone()[0])
+        price = float(cursor.fetchone()[0])
         total_price = price * float(quantity)
         t_price += total_price
         total_price_label.configure(text=f"Total Price: {t_price} AED")
@@ -407,7 +407,17 @@ def sale_history():
     output_file_path = "sales.txt"
     column_names = [desc[0] for desc in cursor.description]
 
-    file = open(output_file_path, "w")
+    import os
+
+    
+    try:
+        path = r"sales.txt"
+        assert os.path.isfile(path)
+        
+    except Exception as e:
+        print(e)
+
+    file = open(path,"w")
     x = prettytable.PrettyTable()
     x.field_names = column_names
     x.padding_width = 1  
@@ -478,3 +488,4 @@ sale_history_btn = CTkButton(master = menu_frame , text = "Sale History", comman
 sales_label =  CTkLabel(master =menu_frame,text = "",font = Standard)
 sales_label.pack(pady=5)
 root.mainloop()
+
