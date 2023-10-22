@@ -42,7 +42,7 @@ def auth():
             sign_frame.place(in_=root, anchor="c", relx=0.5, rely=0.5)
             return con, cursor
     except Exception as e:
-        messagebox.showerror("Error", "Wrong Password for MySQL.")
+        messagebox.showerror("Error", f"Try Again. \n Error:{e}")
 
 
 currentRole = ""
@@ -197,14 +197,14 @@ def add():
     add_win.mainloop()
 
 t_price = 0
-
+total_price = 0
 def sale():
     cursor.execute("select * from product")
     if len(cursor.fetchall()) ==0 :
         messagebox.showerror("Error","No Products available!")
         return
     def calculate_total():
-        global t_price
+        global t_price,total_price
         selected_product = product_var.get()
         quantity = quantity_entry.get()
 
@@ -218,7 +218,7 @@ def sale():
 
         cursor.execute(f"SELECT price FROM product WHERE pname = '{selected_product}'")
         price = int(cursor.fetchone()[0])
-        total_price = price * int(quantity)
+        total_price = price * float(quantity)
         t_price += total_price
         total_price_label.configure(text=f"Total Price: {t_price} AED")
         cursor.execute(
@@ -242,12 +242,16 @@ def sale():
 
         cursor.execute(f"SELECT price FROM product WHERE pname = '{selected_product}'")
         price = cursor.fetchone()[0]
-        total_price = price * int(quantity)
+        total_price = price * float(quantity)
 
         cart_listbox.insert(
             "", "end", values=(selected_product, int(quantity), price, total_price)
         )
-
+    def clear_cart():
+        global t_price
+        cart_listbox.delete(*cart_listbox.get_children())
+        t_price,total_price = 0,0
+        total_price_label.configure(text=f"Total Price: {t_price} AED")
     def process_sale():
         cashier = currentUser
 
@@ -314,20 +318,17 @@ def sale():
     quantity_entry = CTkEntry(master=pos_frame, font=Standard)
     quantity_entry.pack()
 
-    calculate_button = CTkButton(
-        master=pos_frame, text="Calculate Total", command=calculate_total, font=Standard
-    )
-    calculate_button.pack(pady=10)
+    
 
     add_to_cart_button = CTkButton(
-        master=pos_frame, text="Add to Cart", command=add_to_cart, font=Standard
+        master=pos_frame, text="Add to Cart", command=add_to_cart, font=Standard,fg_color="#306844"
     )
     add_to_cart_button.pack(pady=10)
 
     total_price_label = CTkLabel(
         master=pos_frame, text="Total Price: 0.00 AED", font=Standard
     )
-    
+    clear_btn = CTkButton(master = pos_frame , text = "Clear Cart",font = Standard,command = clear_cart,fg_color="#940000").pack(pady=5)
 
     cart_listbox = ttk.Treeview(
         master=pos_frame,
