@@ -185,7 +185,7 @@ def add():
         pname = pname_entry.get()
         price = price_entry.get()
         stock = stock_entry.get()
-        if pname != "" and price != "" and stock != "":
+        if pname != "" and price != "" and int(price) != 0 and stock != "" and int(stock) != 0:
             cursor.execute(
                 f'insert into product values("{pID}","{pname}","{price}","{stock}"); '
             )
