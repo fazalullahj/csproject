@@ -12,8 +12,6 @@ Heading = CTkFont(family="Arial Black", size=28, weight="bold")
 Bfont = CTkFont(family="Arial", size=16, weight="bold")
 Standard = CTkFont(family="Arial", size=15, weight="bold")
 
-
-
 def auth():
     global con, cursor
     try:
@@ -185,7 +183,7 @@ def add():
         pname = pname_entry.get()
         price = price_entry.get()
         stock = stock_entry.get()
-        if pname != "" and price != "" and int(price) != 0 and stock != "" and int(stock) != 0:
+        if pname != "" and price != "" and float(price) != 0.0 and stock != "" and int(stock) != 0:
             cursor.execute(
                 f'insert into product values("{pID}","{pname}","{price}","{stock}"); '
             )
@@ -208,6 +206,50 @@ def sale():
     if len(cursor.fetchall()) ==0 :
         messagebox.showerror("Error","No Products available!")
         return
+
+    from fpdf import FPDF
+    from datetime import datetime
+
+    def generate_receipt(sale_id, product_id, product_name, price, total_price, quantity, sale_date, cashier):
+        pdf = FPDF(format='A4')
+        pdf.add_page()
+
+        # Set fonts
+        pdf.set_font("Arial", "B", size=23)
+        pdf.set_fill_color(255, 255, 255)  # White background color
+        pdf.set_text_color(0, 0, 0)  # Black text color
+
+        # Title
+        pdf.cell(0, 10, txt="Receipt", ln=True, align='C')
+        pdf.set_font("Arial", size=17)
+        # Add a decorative line
+        pdf.set_line_width(0.1)
+        pdf.line(10, pdf.get_y(), 200, pdf.get_y())
+        pdf.ln(5)
+
+        # Receipt details
+        pdf.cell(0, 10, f"Sale ID: {sale_id}", ln=True)
+        pdf.cell(0, 10, f"Sale Date: {sale_date.strftime('%Y-%m-%d')}", ln=True)
+        pdf.cell(0, 10, f"Cashier: {cashier}", ln=True)
+        pdf.cell(0, 10, f"Product ID: {product_id}", ln=True)
+        pdf.cell(0, 10, f"Product Name: {product_name}", ln=True)
+        pdf.cell(0, 10, f"Price: {price} AED", ln=True)
+        pdf.cell(0, 10, f"Quantity: {quantity}", ln=True)
+
+        # Add a decorative line
+        pdf.set_line_width(0.1)
+        pdf.line(10, pdf.get_y(), 200, pdf.get_y())
+        pdf.ln(5)
+
+        # Total Price
+        pdf.cell(0, 10, f"Total Price: {total_price} AED", ln=True, align='C')
+
+        # Save the PDF with a unique name (e.g., using the sale ID)
+        pdf_filename = f"receipts/{sale_id} - Receipt.pdf"
+        pdf.output(pdf_filename)
+
+        return pdf_filename
+
     def calculate_total():
         global t_price,total_price
         selected_product = product_var.get()
@@ -257,6 +299,7 @@ def sale():
         cart_listbox.delete(*cart_listbox.get_children())
         t_price,total_price = 0,0
         total_price_label.configure(text=f"Total Price: {t_price} AED")
+        stock_label.configure(text = "⁙")
     def process_sale():
         cashier = currentUser
         if len(cart_listbox.get_children()) ==0:
@@ -273,12 +316,12 @@ def sale():
             quantity = values[1]
 
             cursor.execute(
-                f"SELECT pID, stock FROM product WHERE pname = '{selected_product}'"
+                f"SELECT pID, stock,price FROM product WHERE pname = '{selected_product}'"
             )
             product_info = cursor.fetchone()
             product_id = product_info[0]
             current_stock = product_info[1]
-
+            price = product_info[2]
             if quantity > current_stock:
                 messagebox.showerror(
                     "Error", f"Insufficient stock for {selected_product}."
@@ -293,12 +336,13 @@ def sale():
             cursor.execute(
                 f"UPDATE product SET stock = {new_stock} WHERE pID = {product_id}"
             )
-            
+            sale_date  = datetime.now()
             cursor.execute(
                 f"INSERT INTO sales (sID, product, quantity_sold, total_price, sale_date, cashier) "
                 f"VALUES ({sale_id}, '{selected_product}', {quantity}, {total_price}, NOW(), '{cashier}')"
             )
-
+            generate_receipt(sale_id, product_id, selected_product, price,total_price, quantity, sale_date, cashier)
+    
         con.commit()
         clear_cart()
         sale_history()
@@ -427,7 +471,7 @@ def sale_history():
     file.write(str(x))
     file.close()
     global theme_var
-    sales_label.configure(text = f'Sales History saved to file ➡ "sales.txt"',fg_color = "#e35d3b")
+    sales_label.configure(text = f'Sales History saved to file ➡ "sales.txt" \n Receipt saved ➡ receipts folder',fg_color = "#e35d3b")
     
 def combobox_callback(choice):
     set_appearance_mode(choice)
@@ -488,4 +532,3 @@ sale_history_btn = CTkButton(master = menu_frame , text = "Sale History", comman
 sales_label =  CTkLabel(master =menu_frame,text = "",font = Standard)
 sales_label.pack(pady=5)
 root.mainloop()
-
