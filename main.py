@@ -210,24 +210,30 @@ def sale():
     from fpdf import FPDF
     from datetime import datetime
 
-    def generate_receipt(sale_id, product_id, product_name, price, total_price, quantity, sale_date, cashier):
+    def generate_receipt(cart_size,sale_id, product_id, product_name, price, total_price, quantity, sale_date, cashier):
+        import os
+        import glob
+
+       
+        for filepath in glob.glob("*~"):
+            try:
+                os.unlink(filepath)
+            except OSError as e:
+                print(e)
         pdf = FPDF(format='A4')
         pdf.add_page()
 
-        # Set fonts
         pdf.set_font("Arial", "B", size=23)
-        pdf.set_fill_color(255, 255, 255)  # White background color
-        pdf.set_text_color(0, 0, 0)  # Black text color
+        pdf.set_fill_color(255, 255, 255)  
+        pdf.set_text_color(0, 0, 0)  
 
-        # Title
         pdf.cell(0, 10, txt="Receipt", ln=True, align='C')
         pdf.set_font("Arial", size=17)
-        # Add a decorative line
+
         pdf.set_line_width(0.1)
         pdf.line(10, pdf.get_y(), 200, pdf.get_y())
         pdf.ln(5)
 
-        # Receipt details
         pdf.cell(0, 10, f"Sale ID: {sale_id}", ln=True)
         pdf.cell(0, 10, f"Sale Date: {sale_date.strftime('%Y-%m-%d')}", ln=True)
         pdf.cell(0, 10, f"Cashier: {cashier}", ln=True)
@@ -236,18 +242,18 @@ def sale():
         pdf.cell(0, 10, f"Price: {price} AED", ln=True)
         pdf.cell(0, 10, f"Quantity: {quantity}", ln=True)
 
-        # Add a decorative line
         pdf.set_line_width(0.1)
         pdf.line(10, pdf.get_y(), 200, pdf.get_y())
         pdf.ln(5)
 
-        # Total Price
         pdf.cell(0, 10, f"Total Price: {total_price} AED", ln=True, align='C')
+        if cart_size == 1:
+            pdf_filename = f"receipts/Receipt.pdf"
 
-        # Save the PDF with a unique name (e.g., using the sale ID)
-        pdf_filename = f"receipts/{sale_id} - Receipt.pdf"
+        elif cart_size > 1:
+            pdf_filename = f"receipts/{cart_size}_Receipt.pdf"
+        
         pdf.output(pdf_filename)
-
         return pdf_filename
 
     def calculate_total():
@@ -309,8 +315,9 @@ def sale():
             cursor.execute("SELECT MAX(sID) FROM sales")
             result = cursor.fetchone()[0]
             return (result if result else 0) + 1
-
+        cart_size = len(cart_listbox.get_children())
         for item in cart_listbox.get_children():
+            
             values = cart_listbox.item(item)["values"]
             selected_product = values[0]
             quantity = values[1]
@@ -341,7 +348,8 @@ def sale():
                 f"INSERT INTO sales (sID, product, quantity_sold, total_price, sale_date, cashier) "
                 f"VALUES ({sale_id}, '{selected_product}', {quantity}, {total_price}, NOW(), '{cashier}')"
             )
-            generate_receipt(sale_id, product_id, selected_product, price,total_price, quantity, sale_date, cashier)
+            generate_receipt(cart_size,sale_id, product_id, selected_product, price,total_price, quantity, sale_date, cashier)
+            cart_size -=1
     
         con.commit()
         clear_cart()
