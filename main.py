@@ -4,7 +4,7 @@ from tkinter import messagebox
 from tkinter import ttk
 
 root = CTk()
-root.geometry("350x300")
+root.geometry("450x400")
 root.title("Graphical Retail Operation Hub")
 set_default_color_theme("dark-blue")
 set_appearance_mode("dark")
@@ -453,7 +453,7 @@ def view():
 import prettytable
 
 def sale_history():
-    cursor.execute("SELECT * FROM sales")
+    cursor.execute("SELECT * FROM sales order by sID desc")
     data = cursor.fetchall()
 
     output_file_path = "sales.txt"
